@@ -12,6 +12,14 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
+# Optionally load .env in local/dev for convenience; in production, prefer platform env configuration
+try:
+    from dotenv import load_dotenv  # type: ignore
+    load_dotenv()  # loads environment variables from a .env file if present
+except Exception:
+    # It's okay if python-dotenv is not installed; env vars can be set by the host environment
+    pass
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

@@ -8,21 +8,22 @@ from drf_yasg.views import get_schema_view
 from rest_framework.permissions import AllowAny
 
 class Command(BaseCommand):
+    help = "Generate OpenAPI schema to interfaces/openapi.json"
+
     def handle(self, *args, **options):
         factory = RequestFactory()
-        django_request = factory.get('/api/?format=openapi')
+        django_request = factory.get('/?format=openapi')
 
         schema_view = get_schema_view(
             openapi.Info(
-                title="My API",
+                title="Simple QA Assistant API",
                 default_version='v1',
-                description="Test description",
+                description="Endpoints for asking questions and receiving AI-generated answers.",
             ),
             public=True,
             permission_classes=(AllowAny,),
         )
 
-        # Call the view with the raw Django HttpRequest
         response = schema_view.without_ui(cache_timeout=0)(django_request)
         response.render()
 

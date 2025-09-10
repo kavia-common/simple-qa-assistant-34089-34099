@@ -28,9 +28,9 @@ urlpatterns = [
 
 schema_view = get_schema_view(
    openapi.Info(
-      title="My API",
+      title="Simple QA Assistant API",
       default_version='v1',
-      description="Test description",
+      description="Endpoints for asking questions and receiving AI-generated answers.",
    ),
    public=True,
    permission_classes=(permissions.AllowAny,),
@@ -51,9 +51,9 @@ def dynamic_schema_view(request, *args, **kwargs):
     url = get_full_url(request)
     view = get_schema_view(
         openapi.Info(
-            title="My API",
+            title="Simple QA Assistant API",
             default_version='v1',
-            description="API Docs",
+            description="Endpoints for asking questions and receiving AI-generated answers.",
         ),
         public=True,
         url=url,
