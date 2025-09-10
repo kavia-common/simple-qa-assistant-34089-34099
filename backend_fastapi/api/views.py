@@ -77,9 +77,17 @@ def ask(request):
     # Defer importing openai client to allow the server to start without the package when not used
     try:
         # Official OpenAI Python SDK (>=1.0)
+        # IMPORTANT: Do NOT pass unsupported kwargs like 'proxies' directly to the client.
+        # If a proxy is needed, rely on environment variables (HTTP_PROXY / HTTPS_PROXY) handled by requests/HTTP stack.
         from openai import OpenAI  # type: ignore
-        client = OpenAI(api_key=api_key, base_url=api_base) if api_base else OpenAI(api_key=api_key)
-        # Use the newer responses API if available
+
+        # Initialize client only with supported args
+        if api_base:
+            client = OpenAI(api_key=api_key, base_url=api_base)
+        else:
+            client = OpenAI(api_key=api_key)
+
+        # Use the newer chat completions API if available
         try:
             resp = client.chat.completions.create(
                 model=model,
@@ -121,6 +129,21 @@ def ask(request):
                 "error": "OpenAI SDK not installed. Please add 'openai' to requirements and install dependencies.",
                 "hint": "pip install openai"
             },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    except TypeError as e:
+        # Catch unexpected kwargs issues like 'proxies' passed somewhere
+        msg = str(e)
+        if "unexpected keyword argument 'proxies'" in msg:
+            return Response(
+                {
+                    "error": "Provider error: Unsupported client parameter 'proxies'.",
+                    "hint": "Remove 'proxies' from OpenAI client initialization. Set HTTP(S)_PROXY env vars instead if you need a proxy."
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        return Response(
+            {"error": f"Provider error: {msg}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
     except Exception as e:
